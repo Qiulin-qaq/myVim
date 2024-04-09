@@ -5,10 +5,19 @@
 using namespace std;
 
 //插入字符
-void myVim::insert(char ch){
+void myVim::insert(char ch) {
+	
+	
+	// 将字符插入到当前光标位置
 	lines[currentRow].insert(lines[currentRow].begin() + currentColumn, ch);
+	
 	currentColumn++;
+
+	cout << ch;
+
+	
 }
+
 
 //删除字符
 void myVim::del(string str) {
@@ -29,10 +38,13 @@ void myVim::moveCursor(int x, int y){
 //判断移动方向
 void myVim::judgeMove() {
 	int x = 0;
-	int y = 0;
+	int y = 3;
 	moveCursor(x, y);
 	while (true) {
 		int ch = _getch();
+		//esc
+		if (ch == 27) return;
+		//上下左右键
 		if (ch == 224) {
 			ch = _getch();
 			switch (ch) {
@@ -59,15 +71,24 @@ void myVim::judgeMove() {
 				}
 				
 			}
-			
-			
+		
+		}
+		else if (ch == 13) {
+			lines.push_back("");
+			moveCursor(0, ++y);
+			currentRow++;
+			currentColumn = 0;
+		}
+		else {
+			insert(ch);
 		}
 	}
 }
 
 void myVim::print() {
 	for (const auto& e : lines) {
-		cout << e << endl;
+		cout << e;
 	}
+	
 
 }
