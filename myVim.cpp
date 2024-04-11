@@ -1,94 +1,131 @@
 #include "myVim.h"
-#include<iostream>
+#include <iostream>
+#include <fstream>
 #include <conio.h>
 
 using namespace std;
 
-//插入字符
-void myVim::insert(char ch) {
-	
-	
-	// 将字符插入到当前光标位置
-	lines[currentRow].insert(lines[currentRow].begin() + currentColumn, ch);
-	
-	currentColumn++;
-
-	cout << ch;
-
-	
+myVim::myVim() {
+    currentRow = 0;
+    currentCol = 0;
 }
 
 
-//删除字符
-void myVim::del(string str) {
-	if (currentColumn > 0) {
-		lines[currentRow].erase(lines[currentRow].begin() + currentColumn - 1);
-		currentColumn--;
-	}
-	// TODO: 补充光标在行首时的删除情况
+void myVim::openFile(const string& filename) {
+    ifstream file(filename);
+    if (file.is_open()) {
+        string line;
+        while (getline(file, line)) {
+            lines.push_back(line); // 将文件的每一行添加到 lines 向量中
+        }
+        file.close();
+        currentFilename = filename;
+        
+    }
+    else {
+        cout << "Unable to open file: " << filename << endl;
+    }
+}
+
+void myVim::displayFileContents() {
+    cout << "\033[1;1H";
+    for (size_t i = 0; i < lines.size(); ++i) {
+        cout << lines[i] << endl;
+    }
+    cout << "\033[1;1H";
 }
 
 
+void myVim::saveFile() {
+    if (currentFilename.empty()) {
+        cout << "当前无打开的文件" << endl;
+        return;
+    }
 
-//光标移动
-void myVim::moveCursor(int x, int y){
-	std::cout << "\033[" << y << ";" << x << "H";
+    ofstream file(currentFilename);
+    if (file.is_open()) {
+        for (const auto& line : lines) {
+            file << line << endl;
+        }
+        file.close();
+        
+    }
+    else {
+        cout << "无法打开文件" << currentFilename << endl;
+    }
 }
 
-//判断移动方向
-void myVim::judgeMove() {
-	int x = 0;
-	int y = 3;
-	moveCursor(x, y);
-	while (true) {
-		int ch = _getch();
-		//esc
-		if (ch == 27) return;
-		//上下左右键
-		if (ch == 224) {
-			ch = _getch();
-			switch (ch) {
-			//向上移动
-			case 72:
-				if (y > 1) {
-					moveCursor(x, --y);
-				}
-				break;
-			//向下移动
-			case 80:
-				moveCursor(x, ++y);
-				break;
-			//向左移动
-			case 75:
-				if (x > 1) {
-					moveCursor(--x, y);
-				}
-					break;
-			case 77:
-				if (x < 100) {
-					moveCursor(++x, y);
-					break;
-				}
-				
-			}
-		
-		}
-		else if (ch == 13) {
-			lines.push_back("");
-			moveCursor(0, ++y);
-			currentRow++;
-			currentColumn = 0;
-		}
-		else {
-			insert(ch);
-		}
-	}
+void myVim::editText() {
+    if (currentFilename.empty()) {
+        cout << "当前无打开的文件" << endl;
+        return;
+    }
+
+    keySolution();
 }
 
-void myVim::print() {
-	for (const auto& e : lines) {
-		cout << e;
-	}
-	
+void myVim::keySolution(){
+    // 无限循环，捕获键盘输入并移动光标
+    while (true) {
+        int key = _getch(); // 获取键盘输入
+        if (key == 224) {
+            key = _getch();
+            // 根据不同的方向键，移动光标
+            switch (key) {
+            case 72: // 上箭头键
+                if (currentRow > 0) currentRow--; // 避免光标移动到屏幕上方之外
+                break;
+            case 80: // 下箭头键
+                currentRow++; // 无需边界检查
+                break;
+            case 75: // 左箭头键
+                if (currentCol > 0) currentCol--; // 避免光标移动到屏幕左侧之外
+                break;
+            case 77: // 右箭头键
+                currentCol++; // 无需边界检查
+                break;
+            default:
+                // 忽略其他键
+                continue;
 
+            }
+        }
+        //删除操作
+        else if (key == 8) {
+            //判定一行的合法范围
+            
+                del();
+                system("cls");
+                displayFileContents();
+                currentCol--;
+            
+        }
+        //保存文件
+        else if (key == 19) {
+            saveFile();
+        }
+        else {
+            // 判断溢出
+            if (currentRow >= lines.size()) continue;
+            /*if (currentCol >= lines[currentRow].size()) currentCol = lines[currentRow].size();*/
+           
+            char ch = (char)key;
+            lines[currentRow].insert(currentCol, 1, ch);
+            currentCol ++;
+            displayFileContents();
+        }
+        cout << "\033[" << currentRow + 1 << ";" << currentCol + 1 << "H"; // ANSI 转义序列，+1 是因为行列号从 1 开始
+    
+        
+
+        
+    }
 }
+
+void myVim::del() {
+    if (currentCol > 0 && currentCol <= lines[currentRow].size()) {
+        lines[currentRow].erase(lines[currentRow].begin() + currentCol - 1);
+    }
+}
+
+

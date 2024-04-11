@@ -1,23 +1,25 @@
 #pragma once
 #include<vector>
 #include<string>
-
-
 using namespace std;
-class myVim{
-private:
-	vector<string> lines;
-	size_t currentRow;
-	size_t currentColumn;
 
+class myVim {
 public:
-	myVim() :currentRow(0), currentColumn(0) {
-		lines.push_back("");
-	}
-	void insert(char ch);
-	void del(string str);
-	void moveCursor(int x, int y);
-	void judgeMove();
-	void print();
+    myVim();
+
+    void openFile(const string& filename);
+    void displayFileContents();
+    void saveFile();
+    void editText();
+    void keySolution();
+    void del();
+    
+
+private:
+    vector<string> lines;
+    string currentFilename;
+    int currentRow;
+    int currentCol;
 };
+
 
