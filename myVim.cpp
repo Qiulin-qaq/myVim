@@ -27,6 +27,7 @@ void myVim::openFile(const string& filename) {
     }
 }
 
+//打印输出
 void myVim::displayFileContents() {
     cout << "\033[1;1H";
     for (size_t i = 0; i < lines.size(); ++i) {
@@ -35,7 +36,7 @@ void myVim::displayFileContents() {
     cout << "\033[1;1H";
 }
 
-
+//保存文件
 void myVim::saveFile() {
     if (currentFilename.empty()) {
         cout << "当前无打开的文件" << endl;
@@ -90,6 +91,12 @@ void myVim::keySolution(){
 
             }
         }
+        //退出编辑器操作
+        else if (key == 27) {
+            system("cls");
+            cout << "已退出编辑器" << endl;
+            return;
+        }
         //删除操作
         else if (key == 8) {
             //判定一行的合法范围
@@ -103,16 +110,37 @@ void myVim::keySolution(){
         //保存文件
         else if (key == 19) {
             saveFile();
+            system("cls");
+            cout << "文件已保存" << endl;
+        }
+       
+        //TODU:撤销操作
+
+        else if (key == 26) {
+            revoke();
         }
         else {
             // 判断溢出
             if (currentRow >= lines.size()) continue;
-            /*if (currentCol >= lines[currentRow].size()) currentCol = lines[currentRow].size();*/
+            
            
             char ch = (char)key;
-            lines[currentRow].insert(currentCol, 1, ch);
-            currentCol ++;
-            displayFileContents();
+            if (key == 13) {
+                string temp = lines[currentRow].substr(currentCol);
+                lines[currentRow].erase(currentCol);
+                lines.insert(lines.begin() + currentRow + 1, temp);
+
+                currentRow++;
+                currentCol = 0;
+                system("cls");
+                displayFileContents();
+                
+            }
+            else {
+                lines[currentRow].insert(currentCol, 1, ch);
+                currentCol++;
+                displayFileContents();
+            }
         }
         cout << "\033[" << currentRow + 1 << ";" << currentCol + 1 << "H"; // ANSI 转义序列，+1 是因为行列号从 1 开始
     
@@ -126,6 +154,12 @@ void myVim::del() {
     if (currentCol > 0 && currentCol <= lines[currentRow].size()) {
         lines[currentRow].erase(lines[currentRow].begin() + currentCol - 1);
     }
+}
+
+void myVim::revoke(){
+
+
+
 }
 
 

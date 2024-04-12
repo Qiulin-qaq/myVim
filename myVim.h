@@ -13,6 +13,7 @@ public:
     void editText();
     void keySolution();
     void del();
+    void revoke();
     
 
 private:
